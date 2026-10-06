@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}CineBook — Now Showing & Ticket Booking{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <h1>Your Gateway to Great Cinema</h1>
+    <p>Select your favorite movies, choose your preferred cinema and screen, pick your seats in real-time, and book tickets instantly.</p>
+</section>
+
+<!-- Now Showing Section -->
+<section>
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <h2 class="section-title">Now Showing</h2>
+        <span style="color: var(--text-muted); font-size: 0.9rem;">{{ movies|length }} Blockbusters Available</span>
+    </div>
+
+    <div class="movie-grid">
+        {% for movie in movies %}
+        <div class="movie-card">
+            <div class="movie-poster-wrap">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster" loading="lazy">
+            </div>
+            <div class="movie-info">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <div class="movie-meta">
+                    <span class="badge badge-red">{{ movie.genre }}</span>
+                    <span class="badge">{{ movie.language }}</span>
+                    <span class="badge">{{ movie.duration_minutes }} mins</span>
+                </div>
+                <p class="movie-desc">{{ movie.description }}</p>
+                <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}" class="btn btn-primary btn-block">
+                    View Shows & Book
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Select Seats — {{ show.movie_title }} — CineBook{% endblock %}
+
+{% block content %}
+<div class="seats-container">
+    <!-- Header with Show Metadata -->
+    <div class="show-header-info">
+        <div>
+            <h2>{{ show.movie_title }}</h2>
+            <div class="show-header-details">
+                <span>🏛 {{ show.cinema_name }}</span> &bull; 
+                <span>🎦 {{ show.screen_name }}</span> &bull; 
+                <span>📅 {{ show.show_date }}</span> &bull; 
+                <span>⏰ {{ show.start_time|format_time }}</span>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Ticket Price</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #34d399;">{{ show.ticket_price|format_currency }}</div>
+        </div>
+    </div>
+
+    <!-- Error/Alert Notification Box -->
+    <div id="message-box"></div>
+
+    <!-- Lock Timer Bar (Shown when seats are temporarily reserved) -->
+    <div id="lock-timer-bar" class="lock-timer-bar">
+        ⏳ Seats reserved temporarily. Time remaining: <span id="timer-display">05:00</span>
+    </div>
+
+    <!-- Screen Graphic Indicator -->
+    <div class="screen-wrapper">
+        <div class="screen-curve"></div>
+        <div class="screen-label">SCREEN THIS WAY</div>
+    </div>
+
+    <!-- Dynamic Seat Grid (Loaded from MySQL via seats.js) -->
+    <div id="seat-grid" class="seat-grid" data-show-id="{{ show.show_id }}" data-ticket-price="{{ show.ticket_price }}">
+        <!-- Injected via JavaScript from /api/show/<show_id>/seats -->
+        <p style="text-align: center; color: var(--text-muted); padding: 30px;">Loading live seat availability from database...</p>
+    </div>
+
+    <!-- Status Legend -->
+    <div class="seat-legend">
+        <div class="legend-item">
+            <div class="legend-color legend-available"></div>
+            <span>Available</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-selected"></div>
+            <span>Selected</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-locked"></div>
+            <span>Temporarily Locked</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color legend-booked"></div>
+            <span>Booked</span>
+        </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="booking-action-bar">
+        <div class="selection-details">
+            <div class="selected-seats-text">Selected Seats: <span id="selected-seats-text" style="color: #60a5fa;">None</span></div>
+            <div class="total-price-text">Estimated Total: <span id="total-price-text" style="color: #34d399; font-weight: 700;">₹0.00</span></div>
+        </div>
+        <button id="proceed-btn" class="btn btn-primary" disabled>
+            Proceed to Booking
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/seats.js') }}"></script>
+{% endblock %}

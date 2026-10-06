@@ -1,0 +1,43 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Login â€” CineBook{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-header">
+        <h2>Sign In to CineBook</h2>
+        <p>Access your tickets and reserve your seats</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.login') }}">
+        {% if next_url %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+
+        <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 10px;">
+            Sign In
+        </button>
+    </form>
+
+    <div style="background-color: var(--bg-surface); padding: 12px; border-radius: var(--radius-sm); margin-top: 20px; font-size: 0.85rem; border: 1px dashed var(--border-color);">
+        <strong style="color: #34d399;">Demo Credentials:</strong><br>
+        Email: <code>gourav@example.com</code><br>
+        Password: <code>password123</code>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+        Don't have an account? <a href="{{ url_for('main.register') }}" style="color: var(--accent); font-weight: 600; text-decoration: none;">Create one here</a>
+    </div>
+</div>
+{% endblock %}
+

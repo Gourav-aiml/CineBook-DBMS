@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings — CineBook{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 30px auto 60px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 class="section-title" style="margin: 0;">My Bookings</h2>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary" style="font-size: 0.85rem;">
+            + Book Another Movie
+        </a>
+    </div>
+
+    {% if bookings %}
+        {% for b in bookings %}
+        <div class="booking-item-card">
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <img src="{{ b.poster_url }}" alt="{{ b.movie_title }}" style="width: 70px; height: 100px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px;">
+                        Booking #{{ b.booking_id }} &bull; Booked on {{ b.booking_time.strftime('%d %b %Y, %I:%M %p') if b.booking_time else '' }}
+                    </div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
+                        {{ b.movie_title }}
+                    </h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 6px;">
+                        🏛 {{ b.cinema_name }} &bull; {{ b.screen_name }}
+                    </p>
+                    <div style="font-size: 0.88rem;">
+                        📅 <strong>{{ b.show_date }}</strong> at <strong>{{ b.start_time|format_time }}</strong>
+                    </div>
+                    <div style="font-size: 0.9rem; margin-top: 6px; color: #60a5fa;">
+                        Seats: <strong>{{ b.seats_list }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                <span class="status-badge status-confirmed">
+                    ● {{ b.booking_status }}
+                </span>
+                <div style="font-size: 1.3rem; font-weight: 800; color: #34d399;">
+                    {{ b.total_amount|format_currency }}
+                </div>
+                <a href="{{ url_for('main.booking_confirmation', booking_id=b.booking_id) }}" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.85rem;">
+                    View Ticket
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="background-color: var(--bg-card); padding: 50px; text-align: center; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="font-size: 3rem; margin-bottom: 12px;">🎟️</div>
+            <h3>No Bookings Found</h3>
+            <p style="color: var(--text-muted); margin: 8px 0 20px;">You haven't made any movie reservations yet.</p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">Browse Now Showing Movies</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

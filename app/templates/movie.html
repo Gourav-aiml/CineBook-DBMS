@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }} — Showtimes & Booking — CineBook{% endblock %}
+
+{% block content %}
+<!-- Movie Hero -->
+<div class="movie-details-hero">
+    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="details-poster">
+    <div class="details-content">
+        <h1>{{ movie.title }}</h1>
+        <div class="movie-meta" style="margin-bottom: 16px;">
+            <span class="badge badge-red">{{ movie.genre }}</span>
+            <span class="badge">{{ movie.language }}</span>
+            <span class="badge">⏱ {{ movie.duration_minutes }} Minutes</span>
+            <span class="badge">📅 Released: {{ movie.release_date }}</span>
+        </div>
+        <h4 style="color: var(--text-secondary); margin-bottom: 8px;">Synopsis</h4>
+        <p class="details-synopsis">{{ movie.description }}</p>
+    </div>
+</div>
+
+<!-- Date Selector -->
+<h2 class="section-title">Select Date</h2>
+<div class="date-selector">
+    {% for dt in available_dates %}
+        <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id, date=dt) }}" 
+           class="date-pill {% if selected_date == dt|string %}active{% endif %}">
+           📅 {{ dt }}
+        </a>
+    {% else %}
+        <p style="color: var(--text-muted);">No upcoming shows scheduled for this movie.</p>
+    {% endfor %}
+</div>
+
+<!-- Cinemas and Showtime Listings -->
+<h2 class="section-title">Available Cinemas & Shows</h2>
+
+{% if cinemas %}
+    {% for cinema in cinemas %}
+    <div class="cinema-card">
+        <h3 class="cinema-title">{{ cinema.cinema_name }}</h3>
+        <p class="cinema-address">📍 {{ cinema.cinema_address }}, {{ cinema.city }}</p>
+
+        <div class="showtime-grid">
+            {% for show in cinema.shows %}
+            <a href="{{ url_for('main.show_seats', show_id=show.show_id) }}" class="showtime-btn">
+                <span class="showtime-time">{{ show.start_time|format_time }}</span>
+                <span class="showtime-screen">{{ show.screen_name }}</span>
+                <span class="showtime-price">{{ show.ticket_price|format_currency }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div style="background-color: var(--bg-card); padding: 40px; text-align: center; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 50px;">
+        <h3 style="margin-bottom: 10px;">No Shows on Selected Date</h3>
+        <p style="color: var(--text-muted);">Please select a different date above to view available showtimes.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

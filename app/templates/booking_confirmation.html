@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Confirmed — Ticket #{{ booking.booking_id }} — CineBook{% endblock %}
+
+{% block content %}
+<div class="ticket-wrapper">
+    <div class="ticket-header">
+        <div style="font-size: 2.2rem; margin-bottom: 6px;">🎟️</div>
+        <h2>Booking Confirmed!</h2>
+        <p style="opacity: 0.9; font-size: 0.95rem;">Booking Reference ID: #{{ booking.booking_id }}</p>
+    </div>
+
+    <div class="ticket-perforation"></div>
+
+    <div class="ticket-body">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                {{ booking.movie_title }}
+            </h3>
+            <span class="badge badge-red">{{ booking.genre }}</span>
+            <span class="badge">{{ booking.language }}</span>
+        </div>
+
+        <div class="summary-row">
+            <span class="summary-label">Cinema</span>
+            <span class="summary-value">{{ booking.cinema_name }}</span>
+        </div>
+
+        <div class="summary-row">
+            <span class="summary-label">Address</span>
+            <span class="summary-value" style="font-size: 0.85rem; color: var(--text-muted);">{{ booking.cinema_address }}</span>
+        </div>
+
+        <div class="summary-row">
+            <span class="summary-label">Auditorium</span>
+            <span class="summary-value">{{ booking.screen_name }}</span>
+        </div>
+
+        <div class="summary-row">
+            <span class="summary-label">Showtime</span>
+            <span class="summary-value">{{ booking.show_date }} &bull; {{ booking.start_time|format_time }}</span>
+        </div>
+
+        <div class="summary-row">
+            <span class="summary-label">Seats Allocated</span>
+            <span class="summary-value" style="color: #34d399; font-size: 1.1rem; font-weight: 800;">
+                {{ booking.seats_list }}
+            </span>
+        </div>
+
+        <div class="summary-row">
+            <span class="summary-label">Payment Status</span>
+            <span class="summary-value">
+                <span class="status-badge status-confirmed">✓ {{ booking.payment_status }}</span>
+            </span>
+        </div>
+
+        <div class="summary-row summary-total">
+            <span>Amount Paid</span>
+            <span>{{ booking.total_amount|format_currency }}</span>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; gap: 14px;">
+            <a href="{{ url_for('main.my_bookings') }}" class="btn btn-primary btn-block">
+                View in My Bookings
+            </a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-block">
+                Back to Movies
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

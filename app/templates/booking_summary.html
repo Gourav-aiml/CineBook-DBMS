@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Summary — CineBook{% endblock %}
+
+{% block content %}
+<div class="summary-card">
+    <div class="summary-header">
+        <h2 style="font-size: 1.6rem; font-weight: 800;">Order Summary</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Review your booking details before final confirmation</p>
+    </div>
+
+    <!-- 5-Minute Reservation Expiry Alert -->
+    <div class="alert alert-warning" id="summary-timer" style="margin-bottom: 24px;">
+        ⏳ Your seats are held temporarily. Confirm within <strong id="countdown">05:00</strong>.
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Movie</span>
+        <span class="summary-value">{{ show.movie_title }}</span>
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Cinema</span>
+        <span class="summary-value">{{ show.cinema_name }}</span>
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Auditorium / Screen</span>
+        <span class="summary-value">{{ show.screen_name }}</span>
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Date & Time</span>
+        <span class="summary-value">{{ show.show_date }} &bull; {{ show.start_time|format_time }}</span>
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Selected Seats</span>
+        <span class="summary-value" style="color: #60a5fa;">
+            {% for s in seats %}
+                {{ s.row_label }}{{ s.seat_number }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </span>
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Ticket Count</span>
+        <span class="summary-value">{{ num_tickets }} ticket{{ 's' if num_tickets > 1 else '' }}</span>
+    </div>
+
+    <div class="summary-row">
+        <span class="summary-label">Price per Ticket</span>
+        <span class="summary-value">{{ show.ticket_price|format_currency }}</span>
+    </div>
+
+    <div class="summary-row summary-total">
+        <span>Total Amount</span>
+        <span>{{ total_amount|format_currency }}</span>
+    </div>
+
+    <!-- Confirm Booking Form (Triggers Backend Transaction) -->
+    <form method="POST" action="{{ url_for('main.confirm_booking') }}" style="margin-top: 30px;">
+        <input type="hidden" name="show_id" value="{{ show.show_id }}">
+        <input type="hidden" name="seat_ids" value="{{ seat_ids_raw }}">
+
+        <button type="submit" id="confirm-btn" class="btn btn-primary btn-block" style="padding: 14px; font-size: 1.05rem;">
+            Confirm Booking & Pay
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 16px;">
+        <a href="{{ url_for('main.show_seats', show_id=show.show_id) }}" style="color: var(--text-muted); font-size: 0.88rem; text-decoration: none;">
+            ← Modify Seat Selection
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 5-minute countdown timer on summary page
+    let timeLeft = 300;
+    const countdownElem = document.getElementById("countdown");
+    const confirmBtn = document.getElementById("confirm-btn");
+
+    const timer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            countdownElem.textContent = "00:00";
+            confirmBtn.disabled = true;
+            alert("Your seat reservation lock has expired. Please select seats again.");
+            window.location.href = "{{ url_for('main.show_seats', show_id=show.show_id) }}";
+        } else {
+            const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+            const secs = String(timeLeft % 60).padStart(2, '0');
+            countdownElem.textContent = `${mins}:${secs}`;
+        }
+    }, 1000);
+</script>
+{% endblock %}
