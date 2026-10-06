@@ -13,18 +13,84 @@ INSERT INTO users (name, email, password_hash) VALUES
 ('Gourav Saha', 'gourav@example.com', 'scrypt:32768:8:1$qrMW0hq9UsHowJlY$45585afa80a119a53a850013257e89b4c97692281b4b91b0515a4622a4cfe7acc8bea2540ca821925465578b9bb0f988e92db4e4de25dd4a3480280d39d4635f');
 
 -- -------------------------------------------------------------
--- 2. SEED MOVIES (8 Diverse Movies with realistic details)
+-- 2. SEED MOVIES (8 Movies)
+-- Movie IDs are kept fixed because shows/bookings reference them.
 -- -------------------------------------------------------------
-INSERT INTO movies (title, description, genre, language, duration_minutes, release_date, poster_url) VALUES
-('Jawan', 'A high-octane action thriller outlining the emotional journey of a man who is set to rectify the wrongs in the society while fulfilling a promise.', 'Action/Thriller', 'Hindi', 169, '2023-09-07', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600&auto=format&fit=crop&q=80'),
-('Interstellar', 'When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft along with a team of researchers to find a new planet for humans.', 'Sci-Fi/Adventure', 'English', 169, '2014-11-07', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80'),
-('Kantara', 'When greed paves the way for betrayal, scheming and murder, a young tribal man reluctantly dons the traditions of his ancestors to seek justice.', 'Action/Mystery', 'Kannada', 148, '2022-09-30', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600&auto=format&fit=crop&q=80'),
-('RRR', 'A fictitious story about two legendary revolutionaries and their journey away from home before they began fighting for their country in the 1920s.', 'Action/Drama', 'Telugu', 187, '2022-03-25', 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=600&auto=format&fit=crop&q=80'),
-('Oppenheimer', 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.', 'Biography/Drama', 'English', 180, '2023-07-21', 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600&auto=format&fit=crop&q=80'),
-('3 Idiots', 'Two friends are searching for their long lost companion. They revisit their college days and recall the memories of their friend who inspired them to think differently.', 'Comedy/Drama', 'Hindi', 170, '2009-12-25', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80'),
-('Dune: Part Two', 'Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.', 'Sci-Fi/Adventure', 'English', 166, '2024-03-01', 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80'),
-('Drishyam 2', 'A gripping tale of an investigation and a family threatened by it. Will Vijay Salgaonkar be able to protect his family this time?', 'Thriller/Crime', 'Hindi', 140, '2022-11-18', 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&auto=format&fit=crop&q=80');
+INSERT INTO movies
+(movie_id, title, description, genre, language, duration_minutes, release_date, poster_url)
+VALUES
+(1,
+ 'The Odyssey',
+ 'A mythic epic adventure based on the legendary journey of Odysseus returning home after the Trojan War.',
+ 'Epic/Adventure',
+ 'English',
+ 150,
+ '2026-07-17',
+ '/static/images/the_odyssey.jpg'),
 
+(2,
+ 'Avengers: Endgame Encore',
+ 'The Avengers unite once again in an extended cinematic presentation of the legendary battle against Thanos.',
+ 'Action/Sci-Fi',
+ 'English',
+ 181,
+ '2026-01-01',
+ '/static/images/avengers_endgame.jpg'),
+
+(3,
+ 'Avengers: Doomsday',
+ 'The Avengers and their allies face a new catastrophic threat that could change the fate of the universe.',
+ 'Action/Sci-Fi',
+ 'English',
+ 150,
+ '2026-12-18',
+ '/static/images/avengers_doomsday.jpg'),
+
+(4,
+ 'M.S. Dhoni: The Untold Story',
+ 'The inspiring journey of Indian cricket legend Mahendra Singh Dhoni from his early life to international cricket.',
+ 'Biography/Sports',
+ 'Hindi',
+ 184,
+ '2016-09-30',
+ '/static/images/ms_dhoni.jpg'),
+
+(5,
+ 'Oppenheimer',
+ 'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.',
+ 'Biography/Drama',
+ 'English',
+ 180,
+ '2023-07-21',
+ '/static/images/oppenheimer.jpg'),
+
+(6,
+ '3 Idiots',
+ 'Two friends search for their long-lost companion while remembering their college days and the friend who inspired them to think differently.',
+ 'Comedy/Drama',
+ 'Hindi',
+ 170,
+ '2009-12-25',
+ '/static/images/3_idiots.jpg'),
+
+(7,
+ 'Project Hail Mary',
+ 'A lone astronaut awakens aboard a spacecraft on a mission that could determine the survival of humanity.',
+ 'Sci-Fi/Adventure',
+ 'English',
+ 150,
+ '2026-03-20',
+ '/static/images/project_hail_mary.jpg'),
+
+(8,
+ 'Spider-Man: Brand New Day',
+ 'Spider-Man faces a new chapter and new challenges while protecting New York City.',
+ 'Action/Superhero',
+ 'English',
+ 135,
+ '2026-07-31',
+ '/static/images/spiderman_brand_new_day.jpg');
+ 
 -- -------------------------------------------------------------
 -- 3. SEED CINEMAS (3 Realistic Cinemas in Kolkata)
 -- -------------------------------------------------------------
