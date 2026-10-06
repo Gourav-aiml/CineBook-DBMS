@@ -1,255 +1,600 @@
 # CineBook — Movie Ticket Booking System
 
-A complete, production-grade college Database Management Systems (DBMS) project implementing an end-to-end Movie Ticket Booking System with a real MySQL 8.0 backend, Flask application server, transactional seat locking, and concurrency control.
+CineBook is an academic Database Management Systems (DBMS) project that implements an end-to-end movie ticket booking system using **Flask and MySQL**. The project demonstrates practical DBMS concepts including relational database design, normalization, constraints, transactions, concurrency control, indexing, joins, and query optimization.
 
 ---
 
 ## 1. Project Overview
 
-**CineBook** is an interactive web-based cinema ticket reservation platform designed to demonstrate foundational and advanced DBMS concepts:
-- Relational schema modeling in **Third Normal Form (3NF)**.
-- Real-time seat allocation with **5-minute optimistic/pessimistic seat locking**.
-- **ACID Transaction Management** guaranteeing atomic multi-seat checkouts.
-- Storage-engine level **Double-Booking Prevention** enforced via MySQL unique constraints and row-level locks.
-- B-Tree index optimization and execution plan profiling (`EXPLAIN`).
+CineBook is a web-based movie ticket booking system designed to demonstrate how DBMS concepts can be applied to a real-world booking application.
+
+The system supports:
+
+* User registration and login
+* Movie browsing
+* Cinema and show selection
+* Interactive seat selection
+* Temporary seat locking for approximately 5 minutes
+* Booking confirmation
+* Simulated payment
+* Booking history
+* Logout
+
+The main DBMS focus is **data integrity and concurrency-safe booking**.
 
 ---
 
 ## 2. Key Features
 
-- **User Authentication:** Registration and login secured with `Werkzeug` password hashing (`scrypt`) and session state.
-- **Dynamic Catalog:** Browse now-showing movies across genres, languages, and durations loaded directly from MySQL.
-- **Multiplex & Showtime Navigation:** Filter schedules by cinema location, date, and auditorium/screen.
-- **Interactive Seat Map:** Visual screen indicator and seat grid (Rows A–E, Seats 1–8) with live color-coded states:
-  - 🟩 **Available** (Unallocated)
-  - 🟦 **Selected** (Currently selected by user)
-  - 🟨 **Temporarily Locked** (Held by a user for 5 minutes)
-  - 🟥 **Booked** (Confirmed reservation)
-- **Temporary Seat Locking:** 5-minute countdown reservation lock to prevent race conditions during checkout.
-- **Atomic Booking & Simulated Payment:** Instant checkout and receipt generation.
-- **My Bookings History:** View previous reservations with seats list and payment status.
+### User Authentication
+
+* User registration and login
+* Passwords stored using Werkzeug password hashing
+* Flask session-based authentication
+
+### Movie Catalog
+
+The current movie catalog contains:
+
+1. The Odyssey
+2. Avengers: Endgame Encore
+3. Avengers: Doomsday
+4. M.S. Dhoni: The Untold Story
+5. 3 Idiots
+6. Project Hail Mary
+7. Spider-Man: Brand New Day
+8. Oppenheimer
+
+Movie information is loaded dynamically from MySQL.
+
+### Cinema and Showtime Navigation
+
+Users can select:
+
+* Movie
+* Cinema
+* Date
+* Show
+* Screen
+
+### Interactive Seat Map
+
+The seat map displays:
+
+* Available seats
+* Selected seats
+* Temporarily locked seats
+* Confirmed booked seats
+
+Each screen contains 40 physical seats arranged in rows A–E.
+
+### Temporary Seat Locking
+
+Selected seats can be temporarily held for approximately 5 minutes before confirmation.
+
+### Booking and Simulated Payment
+
+The booking process creates:
+
+* Booking record
+* Booking-seat records
+* Simulated payment record
+
+The booking operations are performed inside a database transaction.
+
+### Booking History
+
+Users can view their previous bookings, selected seats, show details, and payment status.
 
 ---
 
 ## 3. Technology Stack
 
-- **Frontend:** HTML5, CSS3 (Modern Cinema dark interface), Vanilla JavaScript (No React/Node.js).
-- **Backend:** Python 3.11+, Flask.
-- **Database:** MySQL 8.0+ (InnoDB Storage Engine).
-- **Database Connector:** `mysql-connector-python` (Connection pooling & explicit transactions).
-- **Testing:** `pytest` (Unit, integration, and multi-threaded concurrency suites).
+| Component          | Technology                      |
+| ------------------ | ------------------------------- |
+| Frontend           | HTML5, CSS3, Vanilla JavaScript |
+| Backend            | Python 3, Flask                 |
+| Database           | MySQL 8+                        |
+| Database Connector | mysql-connector-python          |
+| Authentication     | Werkzeug password hashing       |
+| Testing            | pytest                          |
+
+No React, Node.js, MongoDB, or SQLite is used.
 
 ---
 
 ## 4. System Architecture
 
+```text
+┌─────────────────────────────────────────────┐
+│                 User Browser                │
+│          HTML + CSS + Vanilla JS            │
+└──────────────────────┬──────────────────────┘
+                       │ HTTP
+                       ▼
+┌─────────────────────────────────────────────┐
+│              Flask Application              │
+│                                             │
+│  routes.py → application and booking logic │
+│  db.py     → MySQL connection handling     │
+└──────────────────────┬──────────────────────┘
+                       │
+                       │ mysql-connector-python
+                       ▼
+┌─────────────────────────────────────────────┐
+│                 MySQL 8+                    │
+│                                             │
+│  10 relational tables                      │
+│  Primary/Foreign Keys                       │
+│  Constraints and indexes                    │
+│  Transactions and row locking              │
+└─────────────────────────────────────────────┘
 ```
-┌────────────────────────────────────────────────────────┐
-│                   Browser Client                       │
-│    (HTML5 / Modern Dark CSS / Vanilla JS - seats.js)   │
-└───────────────────────────┬────────────────────────────┘
-                            │ HTTP (Jinja2 & REST APIs)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│                  Flask Application                     │
-│    - app/routes.py (Auth, Catalog, Booking logic)      │
-│    - app/db.py (Connection Pool & db_transaction CM)   │
-└───────────────────────────┬────────────────────────────┘
-                            │ mysql-connector-python
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│               MySQL 8.0 (InnoDB Engine)                │
-│    - 10 Normalized Relations (3NF)                     │
-│    - Clustered & Secondary B-Tree Indexes              │
-│    - Pessimistic Row Locking (SELECT ... FOR UPDATE)   │
-│    - Hard Storage Invariant: UNIQUE(show_id, seat_id)  │
-└────────────────────────────────────────────────────────┘
+
+---
+
+## 5. Database Schema
+
+The `cinebook` database contains 10 main tables:
+
+1. `users` — registered users
+2. `movies` — movie information
+3. `cinemas` — cinema branches
+4. `screens` — screens inside cinemas
+5. `seats` — physical seats
+6. `shows` — scheduled movie shows
+7. `bookings` — booking information
+8. `booking_seats` — seats belonging to a booking
+9. `seat_locks` — temporary seat locks
+10. `payments` — simulated payment records
+
+### Main Relationships
+
+```text
+Cinema 1 ─── N Screen
+Screen 1 ─── N Seat
+Movie 1 ─── N Show
+Screen 1 ─── N Show
+User 1 ─── N Booking
+Show 1 ─── N Booking
+Booking 1 ─── N Booking_Seat
+Seat 1 ─── N Booking_Seat
+Show 1 ─── N Seat_Lock
+Booking 1 ─── N Payment
 ```
 
 ---
 
-## 5. Database Schema & Tables
+## 6. Normalization
 
-The schema is partitioned across 10 tables in `cinebook` database:
+The database is designed with normalization up to **Third Normal Form (3NF)**.
 
-1. `users` — Registered customer accounts (`user_id`, `name`, `email`, `password_hash`, `created_at`).
-2. `movies` — Feature film details (`movie_id`, `title`, `genre`, `language`, `duration_minutes`, `release_date`, `poster_url`).
-3. `cinemas` — Multiplex venues (`cinema_id`, `name`, `address`, `city`).
-4. `screens` — Auditoriums per cinema (`screen_id`, `cinema_id`, `screen_name`, `capacity`).
-5. `seats` — Physical seats per auditorium (`seat_id`, `screen_id`, `row_label`, `seat_number`, `seat_type`).
-6. `shows` — Scheduled showtimes (`show_id`, `movie_id`, `screen_id`, `show_date`, `start_time`, `ticket_price`).
-7. `bookings` — Reservation headers (`booking_id`, `user_id`, `show_id`, `booking_time`, `status`, `total_amount`).
-8. `booking_seats` — Junction relation allocating seats to bookings (`booking_id`, `show_id`, `seat_id`).
-   - **Critical Invariant:** `UNIQUE KEY uq_show_seat_booked (show_id, seat_id)`.
-9. `seat_locks` — Temporary 5-minute reservations (`lock_id`, `show_id`, `seat_id`, `user_id`, `locked_at`, `expires_at`).
-10. `payments` — Simulated payment settlements (`payment_id`, `booking_id`, `amount`, `payment_status`, `payment_time`).
+### 1NF
+
+All attributes contain atomic values.
+
+For example, multiple seats are not stored as:
+
+```text
+booking_id | seats
+101        | A1,A2,A3
+```
+
+Instead, each seat is stored as a separate row in `booking_seats`:
+
+```text
+booking_id | show_id | seat_id
+101        | 1       | A1
+101        | 1       | A2
+101        | 1       | A3
+```
+
+### 2NF
+
+Non-key attributes depend on the complete key. Relationship-specific data is separated instead of duplicating movie, cinema, screen, or seat information.
+
+### 3NF
+
+Non-key attributes depend only on the key and not on other non-key attributes.
+
+For example:
+
+* Cinema information belongs in `cinemas`
+* Screen information belongs in `screens`
+* Seat information belongs in `seats`
+* Show information belongs in `shows`
+* Movie information belongs in `movies`
+
+This reduces update, insertion, and deletion anomalies.
 
 ---
 
-## 6. Normalization & Relational Integrity
+## 7. Keys and Constraints
 
-- **1NF (First Normal Form):** Every field stores atomic data. Multi-seat selections are NEVER stored as comma-separated values; they are decomposed into `booking_seats`.
-- **2NF (Second Normal Form):** In tables with composite keys like `booking_seats (booking_id, seat_id)`, non-key attributes depend on the full composite key. Movie titles and seat coordinates are not stored redundantly.
-- **3NF (Third Normal Form):** No transitive dependencies exist. Cinema metadata belongs in `cinemas`, screens in `screens`, shows in `shows`. Modifying a cinema address never causes an update anomaly across show schedules.
+The project uses:
+
+* Primary Keys
+* Foreign Keys
+* UNIQUE constraints
+* NOT NULL constraints
+* CHECK constraints
+* DEFAULT values
+* Appropriate data types and ENUM values
+
+A key constraint is:
+
+```sql
+UNIQUE(show_id, seat_id)
+```
+
+in `booking_seats`.
+
+This ensures that the same seat cannot be confirmed twice for the same show.
+
+Foreign keys maintain referential integrity between related tables.
 
 ---
 
-## 7. Concurrency & Double-Booking Prevention
+## 8. Concurrency and Double-Booking Prevention
 
-Double-booking is prevented through three defensive layers:
+Preventing double booking is one of the most important database features of CineBook.
 
-1. **Temporary Reservation Locks (`seat_locks`):** When a user selects seats, they are locked for 300 seconds. Expired locks are automatically purged before each query.
-2. **Pessimistic Row Locking (`SELECT ... FOR UPDATE`):** During booking confirmation, the show row and target seats are exclusively locked in MySQL to serialize concurrent booking requests.
-3. **Database Hard Constraint:** `UNIQUE KEY (show_id, seat_id)` in `booking_seats` ensures that even under simultaneous concurrent race conditions, InnoDB will physically reject duplicate writes with MySQL Error 1062, forcing a clean transaction `ROLLBACK`.
+The booking workflow uses multiple layers of protection:
+
+### 1. Temporary Seat Locks
+
+A selected seat can be temporarily locked for approximately 5 minutes.
+
+### 2. Database Transactions
+
+Booking-related operations are executed as one logical transaction.
+
+### 3. Row-Level Locking
+
+MySQL uses:
+
+```sql
+SELECT ... FOR UPDATE
+```
+
+to lock relevant database rows during critical booking operations.
+
+### 4. UNIQUE Constraint
+
+The database contains:
+
+```sql
+UNIQUE(show_id, seat_id)
+```
+
+in `booking_seats`.
+
+This provides final database-level protection against duplicate confirmed bookings.
+
+If a booking operation fails, the transaction is rolled back.
+
+> The project uses MySQL transactions and row locking, demonstrating the principles of two-phase locking. A custom lock manager is not implemented.
 
 ---
 
-## 8. Installation & Setup Instructions
+## 9. ACID Properties
+
+### Atomicity
+
+A booking either completes successfully or the transaction is rolled back.
+
+### Consistency
+
+Keys, foreign keys, UNIQUE constraints, and other constraints keep the database valid.
+
+### Isolation
+
+Concurrent transactions are isolated so that conflicting booking operations do not incorrectly modify the same seat.
+
+### Durability
+
+After a transaction is committed, the booking data remains stored in the database.
+
+---
+
+## 10. Transactions
+
+A simplified booking transaction is:
+
+```text
+BEGIN
+   ↓
+Check seat availability
+   ↓
+Lock/check relevant rows
+   ↓
+Create booking
+   ↓
+Insert booking_seats
+   ↓
+Create payment record
+   ↓
+Remove relevant temporary locks
+   ↓
+COMMIT
+```
+
+If an error occurs:
+
+```text
+ROLLBACK
+```
+
+This prevents partially completed bookings.
+
+---
+
+## 11. JOINs
+
+Because the database is normalized into multiple related tables, JOIN operations are required to retrieve combined information.
+
+Example:
+
+```sql
+SELECT m.title, s.show_date, s.start_time
+FROM movies m
+JOIN shows s
+ON m.movie_id = s.movie_id;
+```
+
+Three-table example:
+
+```sql
+SELECT s.start_time, sc.screen_name, c.name
+FROM shows s
+JOIN screens sc
+ON s.screen_id = sc.screen_id
+JOIN cinemas c
+ON sc.cinema_id = c.cinema_id;
+```
+
+---
+
+## 12. Indexing and Query Optimization
+
+Important indexes include:
+
+* `users.email`
+* `shows(movie_id, show_date)`
+* `booking_seats(show_id, seat_id)`
+* `seat_locks(show_id, expires_at)`
+
+Indexes reduce unnecessary full-table scans and improve lookup and join performance.
+
+The project also uses MySQL:
+
+```sql
+EXPLAIN
+```
+
+to inspect query execution plans and understand how MySQL accesses tables and uses indexes.
+
+---
+
+## 13. Installation and Setup
 
 ### Prerequisites
-- Python 3.11+
-- MySQL Server 8.0+ running on `localhost:3306`
 
-### 1. Clone or Open the Workspace
-```bash
-cd CineBook
-```
+* Python 3.11+
+* MySQL 8+
+* Git
 
-### 2. Install Python Dependencies
+### Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure MySQL Database
-Create the database schema and seed sample data using the MySQL command-line client:
-```powershell
-# Windows PowerShell
-Get-Content database/schema.sql | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p
-Get-Content database/seed.sql   | & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p
-```
-*(Enter your MySQL root password when prompted)*
+### Configure Environment Variables
 
-### 4. Configure Environment Variables
-Copy `.env.example` to `.env` and enter your database password:
-```ini
+Copy `.env.example` to `.env` and configure the local MySQL credentials.
+
+Example:
+
+```env
 FLASK_APP=run.py
 FLASK_ENV=development
-SECRET_KEY=cinebook_secret_key_12345
+SECRET_KEY=your_secret_key
 
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
-DB_PASSWORD=your_mysql_password_here
+DB_PASSWORD=your_mysql_password
 DB_NAME=cinebook
 DB_POOL_SIZE=10
 ```
 
----
+The `.env` file is intentionally excluded from GitHub because it contains local credentials.
 
-## 9. Running the Application
+### Database Setup
 
-Start the Flask local development server:
+Run:
+
+```text
+database/schema.sql
+database/seed.sql
+```
+
+using MySQL.
+
+### Start the Application
+
 ```bash
 python run.py
 ```
-Open your web browser and navigate to:
-**`http://127.0.0.1:5000`**
+
+Open:
+
+```text
+http://127.0.0.1:5000
+```
 
 ---
 
-## 10. Demo User Accounts
+## 14. Demo Account
 
-The database comes pre-seeded with 3 demo accounts (all passwords are `password123`):
+The project includes a demo account:
 
-| Name | Email | Password | Role |
-| :--- | :--- | :--- | :--- |
-| **Rahul Sharma** | `rahul@example.com` | `password123` | Customer (has initial bookings on Jawan) |
-| **Priya Patel** | `priya@example.com` | `password123` | Customer (has initial bookings on Jawan) |
-| **Gourav Saha** | `gourav@example.com` | `password123` | Customer / Admin |
+| Name        | Email                | Password      |
+| ----------- | -------------------- | ------------- |
+| Gourav Saha | `gourav@example.com` | `password123` |
+
+Additional seeded users may also be present for demonstrating booking relationships.
 
 ---
 
-## 11. Automated Testing
+## 15. Testing
 
-Run the complete test suite with `pytest` to verify all 15 project test scenarios:
+Run:
+
 ```bash
 python -m pytest tests/ -v
 ```
 
-### Summary of Automated Tests:
-- `test_01_registration`: Tests user registration with password hashing.
-- `test_02_login`: Tests credential verification and session management.
-- `test_03_movies_load_from_mysql`: Tests dynamic movie catalog retrieval.
-- `test_04_movie_cinema_show_navigation`: Tests movie -> cinema -> showtime filtering.
-- `test_05_seats_load_dynamically_from_mysql`: Verifies real-time seat availability calculation.
-- `test_06_and_07_seat_selection_and_locking`: Tests temporary 5-minute reservation locking.
-- `test_08_locked_seats_unavailable_to_another_user`: Verifies locked seats cannot be hijacked.
-- `test_09_expired_locks_become_available`: Verifies automatic pruning of expired locks.
-- `test_10_and_11_booking_succeeds_and_appears_in_my_bookings`: Verifies end-to-end booking.
-- `test_12_already_booked_seat_cannot_be_booked`: Verifies rejection of booked seats.
-- `test_13_simultaneous_booking_collision`: Tests multi-threaded race conditions (only 1 succeeds).
-- `test_14_atomic_multi_seat_rollback`: Verifies full transaction rollback on partial failure.
-- `test_15_logout`: Tests session termination.
-- `test_double_booking_unique_constraint`: Tests MySQL storage-engine level duplicate prevention.
+The test suite covers areas including:
+
+* User registration
+* Login
+* Movie loading
+* Movie/cinema/show navigation
+* Seat availability
+* Temporary seat locking
+* Expired lock handling
+* Booking workflow
+* Already-booked seat handling
+* Concurrent booking attempts
+* Transaction rollback
+* Logout
+* Database-level duplicate prevention
+
+The exact number of passing tests should be taken from the current test run rather than hard-coded in the documentation.
 
 ---
 
-## 12. Project Folder Structure
+## 16. Project Structure
 
-```
+```text
 CineBook/
 ├── app/
-│   ├── __init__.py           # Flask app factory & Jinja2 custom filters
-│   ├── routes.py             # Route controllers & transaction business logic
-│   ├── db.py                 # MySQL connection pooling & transaction context manager
-│   │
+│   ├── __init__.py
+│   ├── db.py
+│   ├── routes.py
 │   ├── templates/
-│   │   ├── base.html         # Base layout with navbar & flash alerts
-│   │   ├── index.html        # Home page showing movie catalog
-│   │   ├── login.html        # User login form
-│   │   ├── register.html     # User registration form
-│   │   ├── movie.html        # Movie details, cinema & date selector
-│   │   ├── seats.html        # Interactive seat grid & countdown timer
-│   │   ├── booking_summary.html      # Order summary & pricing breakdown
-│   │   ├── booking_confirmation.html # Ticket confirmation receipt
-│   │   └── bookings.html     # User booking history
-│   │
+│   │   ├── base.html
+│   │   ├── index.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── movie.html
+│   │   ├── seats.html
+│   │   ├── booking_summary.html
+│   │   ├── booking_confirmation.html
+│   │   └── bookings.html
 │   └── static/
-│       ├── css/style.css     # Modern cinema dark UI styles
-│       └── js/seats.js       # Dynamic seat selection & lock polling
+│       ├── css/
+│       ├── js/
+│       └── images/
 │
 ├── database/
-│   ├── schema.sql            # 10 normalized tables, constraints, indexes
-│   └── seed.sql              # Realistic seed data (movies, cinemas, seats, shows)
+│   ├── schema.sql
+│   └── seed.sql
 │
 ├── docs/
-│   ├── ER_DIAGRAM.md         # Mermaid ER diagram & cardinalities
-│   ├── DATABASE_DESIGN.md    # 1NF, 2NF, 3NF proofs & functional dependencies
-│   ├── DBMS_CONCEPTS.md      # ACID properties, 2PL theory, row-locking
-│   ├── IMPORTANT_QUERIES.sql # JOINs, aggregations, GROUP BY & HAVING queries
-│   ├── INDEXING.md           # B-Tree index analysis & read-write trade-offs
-│   └── QUERY_OPTIMIZATION.md # Real MySQL EXPLAIN execution plans
+│   ├── ER_DIAGRAM.md
+│   ├── DATABASE_DESIGN.md
+│   ├── DBMS_CONCEPTS.md
+│   ├── IMPORTANT_QUERIES.sql
+│   ├── INDEXING.md
+│   └── QUERY_OPTIMIZATION.md
 │
 ├── tests/
-│   ├── test_database.py      # Schema and constraint verification
-│   ├── test_booking.py       # End-to-end booking flow tests
-│   └── test_concurrency.py   # Multi-threaded race condition & rollback tests
+│   ├── test_database.py
+│   ├── test_booking.py
+│   └── test_concurrency.py
 │
-├── .env.example              # Environment variables template
-├── .gitignore                # Protects secrets, cache, and virtualenvs
-├── requirements.txt          # Python dependencies
-├── README.md                 # Project documentation
-└── run.py                    # Application launch script
+├── .env.example
+├── .gitignore
+├── README.md
+├── requirements.txt
+└── run.py
 ```
 
 ---
 
-## 13. Viva Demonstration Guide for Professors
+## 17. Important Files
 
-When presenting CineBook to your DBMS professor or external examiner:
+| File                         | Purpose                                                   |
+| ---------------------------- | --------------------------------------------------------- |
+| `run.py`                     | Starts the Flask application                              |
+| `app/routes.py`              | Application routes and booking logic                      |
+| `app/db.py`                  | MySQL connection and transaction handling                 |
+| `database/schema.sql`        | Database tables, constraints and indexes                  |
+| `database/seed.sql`          | Sample database data                                      |
+| `docs/ER_DIAGRAM.md`         | ER model and relationships                                |
+| `docs/DATABASE_DESIGN.md`    | Database design and normalization                         |
+| `docs/DBMS_CONCEPTS.md`      | DBMS concepts applied to the project                      |
+| `docs/IMPORTANT_QUERIES.sql` | Important SQL queries                                     |
+| `docs/INDEXING.md`           | Indexing discussion                                       |
+| `docs/QUERY_OPTIMIZATION.md` | Query optimization and EXPLAIN                            |
+| `tests/`                     | Automated project tests                                   |
+| `.env.example`               | Safe configuration template                               |
+| `.gitignore`                 | Prevents secrets and generated files from being committed |
+| `requirements.txt`           | Python dependencies                                       |
 
-1. **Demonstrate 3NF Normalization:** Open `docs/DATABASE_DESIGN.md` and explain how `booking_seats` eliminates repeating groups (1NF), removes partial dependencies (2NF), and separates movies/cinemas/screens/shows to eliminate transitive dependencies (3NF).
-2. **Demonstrate the Relational ER Diagram:** Show `docs/ER_DIAGRAM.md` with cardinalities (`1:N` between Cinema and Screens, `1:N` between Screen and Seats, and associative entity `booking_seats`).
-3. **Demonstrate Live Seat State (No Hardcoding):** Open `/show/1/seats` in the browser and open MySQL Workbench or CLI side-by-side. Run `SELECT * FROM booking_seats WHERE show_id = 1;` and show that seats `A1` and `A2` are marked red (`BOOKED`) purely because they exist in the database table.
-4. **Demonstrate ACID & Concurrency:** Run `python -m pytest tests/test_concurrency.py -v`. Show how two threads simultaneously competing for the exact same seat results in exactly 1 booking and 1 failure, with zero partial states.
-5. **Demonstrate Query Optimization:** Show `docs/QUERY_OPTIMIZATION.md` with actual `EXPLAIN` execution plans highlighting `Using index` and `type: eq_ref`.
+---
+
+## 18. Live Demonstration
+
+Recommended demonstration flow:
+
+1. Start Flask with `python run.py`.
+2. Open the CineBook homepage.
+3. Show the current movie catalog.
+4. Login using the Gourav demo account.
+5. Select a movie, cinema, date and show.
+6. Open the seat map.
+7. Select seats and demonstrate temporary locking.
+8. Confirm the booking.
+9. Show the simulated payment and confirmation.
+10. Open My Bookings.
+11. If required, show the related database rows in MySQL.
+
+Useful queries during the demonstration:
+
+```sql
+SELECT * FROM seat_locks;
+
+SELECT * FROM booking_seats;
+
+SELECT * FROM bookings;
+
+SELECT * FROM payments;
+```
+
+---
+
+## 19. Future Scope
+
+Possible future improvements include:
+
+* Real payment gateway integration
+* Email/SMS booking notifications
+* Stronger production authentication and session security
+* Background service for expired-lock cleanup
+* Cloud deployment
+* Mobile application
+* Movie recommendation system
+* Dynamic pricing
+* Scalable multi-server deployment
+
+---
+
+## 20. Project Scope
+
+CineBook is an academic DBMS project and demonstration system. Payment processing is simulated, and the application is intended to demonstrate database concepts rather than serve as a production cinema platform.
+
+The main objective is to demonstrate how **relational database design, normalization, constraints, transactions, concurrency control, indexing, joins, and query optimization** can be combined in a practical application.
